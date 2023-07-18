@@ -1,0 +1,35 @@
+---
+title: "TRABAJO 2 ANALÍTICA ESPACIAL"
+output: html_notebook
+---
+
+
+```{r}
+# Cargar librerías
+library(readxl)
+library(dplyr)
+
+# Ruta del archivo Excel
+ruta_archivo <- "C:/Users/Maria Jose/Documents/MAGISTER MBA/Analítica espacial y automatización de código para business location decisions/Trabajo 2/BasePIB_ACTUALIZADA (2).xlsx"
+
+# Obtener la lista de nombres de hojas del archivo
+lista_hojas <- excel_sheets(ruta_archivo)
+
+# Leer cada hoja y crear un dataframe separado para cada una
+for (hoja in lista_hojas) {
+  # Leer los datos de la hoja
+  df <- read_excel(ruta_archivo, sheet = hoja)
+  
+  # Desplazar una celda hacia arriba en la columna 1
+  df <- slice(df, -1)
+  
+  # Cambiar los nombres de las columnas 2 a 9 por los años desde 2003 al 2010
+  colnames(df)[2:9] <- c(2003:2010)
+  
+  # Asignar el dataframe actualizado al mismo nombre de la hoja
+  assign(hoja, df)
+}
+
+# Ahora los dataframes R1, R2, R3, R4 tienen las columnas 2 a 9 con los años desde 2003 al 2010 como nombres de columna
+
+```
