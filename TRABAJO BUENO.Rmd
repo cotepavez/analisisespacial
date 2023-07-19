@@ -1,0 +1,96 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Cargar librerías
+library(readxl)
+
+library(dplyr)
+library(tidyr)
+
+# Ruta del archivo Excel
+ruta_archivo <- "C:/Users/Maria Jose/Documents/MAGISTER MBA/Analítica espacial y automatización de código para business location decisions/Trabajo 2/BasePIB_ACTUALIZADA (2).xlsx"
+
+# Obtener la lista de nombres de hojas del archivo
+lista_hojas <- excel_sheets(ruta_archivo)
+
+# Leer cada hoja y crear un dataframe separado para cada una
+for (hoja in lista_hojas) {
+  # Leer los datos de la hoja
+  df <- read_excel(ruta_archivo, sheet = hoja)
+  
+  # Desplazar una celda hacia arriba en la columna 1
+  df <- slice(df, -1)
+  
+  # Cambiar los nombres de las columnas 2 a 9 por los años desde 2003 al 2010
+  colnames(df)[2:9] <- c("2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010")
+  
+  # Asignar el dataframe actualizado al mismo nombre de la hoja
+  assign(hoja, df)
+}
+
+# Ahora los dataframes R1, R2, R3, R4 tienen las columnas 2 a 9 con los años desde 2003 al 2010 como nombres de columna
+
+# Juntar los dataframes R1, R2, R3 y R4 en una única tabla
+datos_combinados <- bind_rows(R1, R2, R3, R4, .id = "Region")
+
+# Obtener los nombres de las columnas
+nombres_columnas <- colnames(datos_combinados)
+
+# Convertir los nombres de las columnas a caracteres
+nombres_columnas <- as.character(nombres_columnas)
+
+# Asignar los nuevos nombres de las columnas al dataframe
+colnames(datos_combinados) <- nombres_columnas
+
+# Verificar los cambios
+print(datos_combinados)
+View(datos_combinados)
+
+
+# Continuación del código existente
+
+# Supongamos que 'datos_combinados' es el dataframe combinado con las columnas como lo has mencionado
+
+# Obtener los nombres de las columnas de años (desde 2003 hasta 2010)
+nombres_anios <- colnames(datos_combinados)[3:10]
+
+# Crear una lista para almacenar los dataframes separados por año
+dataframes_por_anio <- vector("list", length(nombres_anios))
+
+# Separar el dataframe por año y almacenarlo en la lista
+for (i in seq_along(nombres_anios)) {
+  anio <- nombres_anios[i]
+  dataframes_por_anio[[i]] <- datos_combinados %>%
+    select(Region, `Actividad económica`, {{anio}}) %>%
+    rename(Valor = {{anio}}) %>%
+    pivot_wider(names_from = Region, values_from = Valor)
+}
+
+# Asignar nombres a los dataframes en la lista
+nombres_dataframes <- paste0("año_", nombres_anios)
+names(dataframes_por_anio) <- nombres_dataframes
+
+# Ahora tienes dataframes separados para cada año, con las regiones como columnas y las actividades económicas como índices.
+# Puedes acceder a cada uno de ellos por su nombre, por ejemplo, dataframe_2003, dataframe_2004, etc.
+
+```
+```{r}
+#
+# Supongamos que 'dataframes_por_anio' es la lista con los dataframes separados por año
+# Función para calcular la suma de cada fila en un dataframe
+calcular_suma_fila <- function(df) {
+  df %>%
+    mutate(Suma = rowSums(select(., "1", "2", "3", "4"), na.rm = TRUE))
+}
+
+# Aplicar la función calcular_suma_fila a cada dataframe en la lista
+dataframes_por_anio <- lapply(dataframes_por_anio, calcular_suma_fila)
+
+# Verificar los cambios
+print(dataframes_por_anio)
+```
+
